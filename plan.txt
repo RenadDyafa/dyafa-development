@@ -1,0 +1,147 @@
+# Dyafa Development Website — Full Build Plan
+
+## Context
+
+`dyafa-development-web` currently contains only a `docs/` folder — `BRD.md` (business rules), `FEATURES.md` (authoritative technical spec), `PROMPT.md` (a one-shot build instruction written for exactly this situation), a 28-page brand-identity HTML, and a marketing-voice reference docx. No code, no `package.json`, nothing scaffolded. The three markdown specs were deliberately written together as a complete, internally-consistent build spec: a bilingual (EN/AR) marketing site + lead-generation funnel + custom admin CMS with a compliance/governance workflow, for "Dyafa Development," a Saudi hospitality real-estate developer. The goal now is to build the entire thing — frontend, backend, database, API, admin CMS — matching that spec exactly, plus one confirmed addition (a Task/Build Tracker in the admin CMS).
+
+Two planning passes (frontend/design-system and backend/database/CMS) were run against the specs and are merged below. Note: `PROMPT.md §0` references two Claude Code plugins, **task-observer** and **claude-mem**, as optional session tooling to track build phases and preserve context — neither is installed in this environment. Per the spec's own instruction, this is noted once here and the build proceeds with ordinary planning/tracking (this plan file, `TodoWrite`-equivalent phase tracking, and git commits per phase). This is unrelated to the **Task/Build Tracker admin feature** described in §7 below, which is a real, confirmed, in-scope feature of the website itself.
+
+**Confirmed decisions going into this build:**
+- Vision 2030 references: allowed when grounded/specific (BRD.md rule wins over PROMPT.md's stricter "never" — user confirmed).
+- Database: PostgreSQL from the start, run locally via Docker Compose (not SQLite).
+- Color palette: the navy/teal/gold/warm-white system in `FEATURES.md §3` (confirmed authoritative over a stray leftover CSS block in the brand-guidelines HTML).
+- Extra feature: an admin **Task/Build Tracker** (generic to-do list + aggregated visibility into content-workflow and lead-pipeline states) — confirmed in scope, beyond the literal FEATURES.md text.
+
+---
+
+## 1. Tech stack (locked by spec)
+
+Next.js 14+ (App Router, TypeScript, RSC) · Tailwind CSS (CSS-variable design tokens) · next-intl (`en`/`ar`, route-based, full RTL) · Prisma ORM + PostgreSQL · NextAuth (credentials + role claims, RBAC) · Zod on every API boundary (shared client/server schemas) · Nodemailer/Resend abstraction via `MAIL_PROVIDER` · Vitest (unit) + Playwright (e2e) · S3-compatible file storage adapter (local disk in dev) · first-party `events` table for analytics, Plausible/GA4 optional via env. Single Next.js repo, single deployable (Vercel or Docker/self-hosted Node).
+
+## 2. Project structure
+
+```
+prisma/
+  schema.prisma
+  seed.ts
+src/
+  middleware.ts                    next-intl locale routing, excludes /admin, /api
+  app/
+    layout.tsx  globals.css  sitemap.ts  robots.ts  not-found.tsx
+    [locale]/
+      layout.tsx                   <html lang dir>, fonts, NextIntlClientProvider, Header/Footer
+      page.tsx  not-found.tsx  error.tsx
+      about/  development-model/  modular-hospitality/  services/
+      projects/page.tsx  projects/[slug]/page.tsx        (FEATURE_PROJECTS-gated)
+      partnerships/
+      insights/page.tsx  insights/[slug]/page.tsx  insights/category/[cat]/page.tsx
+      submit-your-site/  contact/  campaigns/[slug]/  privacy/  terms/
+    dev/ui/page.tsx                 component kitchen-sink, excluded from prod/sitemap
+    admin/                          NextAuth-gated internal tool (English chrome, bilingual content fields)
+      layout.tsx  login/  page.tsx (dashboard)
+      leads/  content/{pages,insights,projects,campaigns,partners,facts,media,banned-phrases}/
+      tasks/  tasks/board/  users/  settings/
+    api/
+      leads/{site-review,meeting,contact,talent}/route.ts
+      newsletter/{subscribe,confirm}/route.ts
+      insights/route.ts  insights/[slug]/route.ts
+      projects/route.ts  events/route.ts  health/route.ts
+      admin/{insights,pages,projects,campaigns,partners,facts,media,banned-phrases,users}/...
+      admin/{entity}/[id]/transition/route.ts
+      admin/leads/... admin/compliance/scan/route.ts admin/dashboard/route.ts
+      admin/tasks/route.ts  admin/tasks/[id]/route.ts  admin/tasks/board/route.ts
+      auth/[...nextauth]/route.ts
+  components/
+    layout/  motif/ (AscentBlock, AscentMotif, GateDiagram)  hero/  sections/
+    forms/  insights/  campaign/  cms/PageBlockRenderer.tsx  seo/
+    admin/ (WorkflowStatusBar, ComplianceScanPanel, LeadsTable, TaskList, TaskBoard, ...)
+    ui/ (Button, Input, Select, Card, SectionHeading, Toast, EmptyState, MirroredIcon, ...)
+  lib/
+    i18n/  env.ts  constants/brand.ts  utm.ts  analytics/events.ts
+    validation/schemas/ (siteReview, meeting, contact, talent, newsletter — shared FE/BE)
+    seo/  auth/  authz.ts  admin/workflow.ts  compliance/scanner.ts  insights/readingTime.ts  rtl.ts
+  messages/en.json  messages/ar.json
+  styles/tokens.css  fonts.css
+e2e/                                Playwright specs
+docker-compose.yml  .env.example  next.config.mjs  tailwind config (v4 @theme or v3.4)  vitest.config.ts  playwright.config.ts
+```
+
+## 3. Database (Prisma / PostgreSQL)
+
+Full model set from `FEATURES.md §8`, table names preserved via `@@map`: `User, Lead, LeadNote, LeadFile, Page, PageBlock, Insight, Pillar, Project, Campaign, Partner, ApprovedFact, BannedPhrase, Media, Approval, Subscriber, Event, Setting`, plus the new `Task` model. Key points:
+- Enums: `Role, Locale, LeadType, Persona, LeadStatus, LegalStatus, AssetType, WorkflowState, RiskLevel, BannedSeverity, MediaKind, TaskCategory, TaskStatus, TaskPriority`. `LeadStatus` splits the spec's `closed/archived` into two distinct terminal states.
+- Governance fields (`audience, objective, cta, riskLevel, approvedById, approvedAt`) added consistently to `Page, Insight, Project, Campaign` per BRD §5's "every content item carries audience/pillar/objective/CTA/risk level/approver."
+- `Lead` gets `landLocationLat/Lng` (optional map pin) and `idempotencyKey` (unique, supports `Idempotency-Key` header per §9 conventions).
+- `Approval` is a generic audit log (`entityType, entityId` as plain strings, not FKs) reused for both content-workflow transitions and lead status/PDPL-delete events, so the audit trail survives a PDPL hard-delete.
+- Indexes exactly as spec'd: `leads(status, persona, created_at)`, `insights(status, published_at)`, `events(name, created_at)`, plus `leads(campaign_id)`.
+- **New `Task` model**: `id, title, description?, category(content_workflow|lead_pipeline|general), status(todo|in_progress|blocked|done|cancelled), priority(low|medium|high|urgent), assigneeId?, createdById, dueAt?, linkedEntityType?, linkedEntityId?, completedAt?, createdAt, updatedAt`. Real to-do rows live here; the aggregated "board" view (`GET /api/admin/tasks/board`) unions these with live `WorkflowState`/`LeadStatus` groupings from other tables (read-only aggregation, not a duplicated status field) so nothing goes stale.
+- `docker-compose.yml`: `postgres:16` service (volume + healthcheck) + `app` + `worker` (DB-backed cron for email queue, sitemap regen, scheduled publishing, daily digest). `.env.example` covers `DATABASE_URL, NEXTAUTH_*, MAIL_*, WHATSAPP_NUMBER, NEXT_PUBLIC_ANALYTICS_*, ADMIN_SEED_*, STORAGE_*, FEATURE_PROJECTS=false, RATE_LIMIT_*, JOB_RUNNER_MODE, CRON_SECRET`.
+
+## 4. API surface
+
+Matches `FEATURES.md §9` exactly (public lead/newsletter/insights/projects/events/health/sitemap-robots-rss routes; admin CRUD for all content types + `transition` + `compliance/scan` + `dashboard` + leads inbox/export/PDPL-delete), plus `admin/tasks` CRUD and `admin/tasks/board`. Conventions: `{data, error}` envelope, `422 {error:{code:'VALIDATION_ERROR', fields}}`, cursor pagination, `Idempotency-Key` support on lead POSTs, CSRF on admin mutations, rate limiting on public POSTs.
+
+## 5. Compliance/governance engine
+
+`lib/compliance/scanner.ts` runs three checks against `{textEn, textAr}`: (1) banned-phrase match against the DB-seeded, legal-editable list (normalized text, EN case-insensitive / AR diacritic-stripped); (2) HIGH-RISK detectors — numbers/%/SAR, secured/approved/funded/guaranteed (EN+AR), government-entity dictionary (seeded in `settings`, `[NEEDS VERIFICATION]`), unapproved partner/project references (structural check: any block referencing a partner/project must resolve to an `approved_at != null && active` row), hard delivery dates; (3) bilingual-completeness (AR non-empty, not identical to EN). `POST /api/admin/compliance/scan` gives the admin UI a live pre-check; `POST /api/admin/{entity}/[id]/transition` enforces it as a hard gate — any `block` prevents advancing past `tech_review`; any HIGH-RISK `flag` force-redirects the target state to `legal_review` regardless of what was requested; `approved → published` requires zero blocks. Every transition (and blocked attempt) writes an `Approval` row.
+
+## 6. Design system & i18n/RTL
+
+- Tokens copied verbatim from `FEATURES.md §3` into `src/styles/tokens.css`, bridged into Tailwind via `@theme` (v4) or `theme.extend.colors` (v3.4 fallback) so utilities like `bg-navy-900`/`text-teal-500`/`border-bronze` are available directly, keeping to the spec's 60/25/12/3 (white-stone/navy/teal/gold) ratio.
+- Fonts: Montserrat (EN) + Almarai (AR) self-hosted via `next/font/local`; a parallel type-scale under `[dir='rtl']` gives Arabic 78–82% optical-size parity without shrinking the font directly.
+- RTL via Tailwind's native logical-property utilities only (`ms-*, me-*, text-start`, etc.) — no extra RTL plugin; a lint script blocks physical-direction classes (`ml-, mr-, left-, right-`) outside an allowlist.
+- One signature visual: `AscentBlock.tsx` (single SVG riser primitive) powers both `AscentMotif.tsx` (animated hero reveal, respects `prefers-reduced-motion`) and `GateDiagram.tsx` (static/interactive 5-gate diagram on `/development-model`) so the two required usages never visually drift apart.
+- Anti-generic-AI-design rules enforced structurally: `OutcomeCard` is reused for Services/Partnerships but wrapped in different layout containers per page (not the same repeated card grid); numbering only appears on the genuinely sequential 5 gates; no gradient washes; a global reduced-motion backstop rule.
+- **Locked-copy pages vs CMS-editable pages**: pages whose hero copy/structure is spec-approved verbatim (Home, About, Development model, Modular hospitality, Services, Partnerships, Submit-your-site) ship as hardcoded Next.js pages driven by `messages/en.json`/`messages/ar.json` (git-reviewed), keeping compliance-sensitive copy out of a freely-editable CMS surface. The `Page`/`PageBlock` tables and `PageBlockRenderer` are scoped to genuinely editable regions instead (campaign pages, promo bands, insights-feed config) — this is a deliberate interpretation to satisfy BRD's "no invented facts"/governance intent, applied consistently across frontend and backend.
+
+## 7. Admin CMS (incl. Task/Build Tracker)
+
+`/admin` (NextAuth-gated, RBAC: `marketing, dev_lead, ceo, legal, admin`): Dashboard (funnel, top content, compliance queue, tasks widget), Leads inbox (filterable table, notes, status, CSV export, PDPL delete), Content editors per type with `WorkflowStatusBar` + `TransitionDialog` + `ComplianceScanPanel` (inline EN/AR highlighting) + `BilingualCompletenessCheck` + `PreviewButton` (signed non-indexed draft URLs), Media library, Banned-phrases CRUD (legal-owned), Users, Settings.
+
+**Task/Build Tracker** (`/admin/tasks`, `/admin/tasks/board`): a `TaskList`/`TaskRow` view (filter by mine/all/role/source/status/due date) plus a simple kanban `TaskBoard` (To do/In progress/Blocked/Done). Real to-do rows (`category=general`: title/assignee/due date/priority, no rich text) cover generic internal project management. Workflow/lead-derived cards (`category=content_workflow|lead_pipeline`) are a read-aggregation from live `WorkflowState`/`LeadStatus` data with a `RelatedEntityChip` deep-linking straight to the underlying content/lead screen — completing the real action (transitioning state, changing lead status) is what resolves the card, so there's one system of record, not a second parallel checklist.
+
+## 8. Lead engine
+
+`/submit-your-site` (`SiteReviewForm`, every FEATURES §4.1 field, react-hook-form + shared Zod schema, file upload with server-side magic-byte + size/type checks, honeypot, PDPL consent), meeting/contact/talent/newsletter forms, campaign landing pages inheriting the site-review form with `campaign_id` + UTM (first-touch cookie). Backend: persona auto-tagging, DB-backed job queue for email notifications (≤1 min SLA) + daily digest, full status lifecycle with audit logging, CSV export, PDPL hard-delete.
+
+## 9. SEO, analytics, accessibility, performance
+
+Per-page bilingual metadata, hreflang (en/ar/x-default), canonical, JSON-LD (`Organization` with `legalName`, `WebSite`, `BreadcrumbList`, `Article`, `FAQPage` on modular-hospitality), auto-generated OG images, `sitemap.xml`/`robots.txt`/`rss.xml` (excluding `/projects` while `FEATURE_PROJECTS=false`). First-party `events` table tracks page views/locale switch/form funnel/WhatsApp clicks/CTA/campaign attribution, feeding the admin dashboard. WCAG 2.1 AA throughout (contrast, focus rings, skip link, semantic landmarks). Core Web Vitals budget (LCP<2.5s, CLS<0.1, INP<200ms) via `next/image`, self-hosted fonts with `font-display: swap`, static-first rendering.
+
+## 10. Seeding
+
+`prisma/seed.ts` (idempotent upserts): 12 pillars (verbatim EN names from the marketing docx §13; AR names flagged for native-review pass), full banned-phrase list EN+AR (from `PROMPT.md §3` + docx §18 "Do Not Use," classified `block` vs `flag`), one admin user from `ADMIN_SEED_*`, `settings` (`FEATURE_PROJECTS=false`, BD notification emails, WhatsApp number placeholder, government-entity/watch-list starter data), structural pages seeded `published` with approved copy, 5 bilingual insight drafts (from the approved LinkedIn sample posts, no new claims), `partners`/`projects`/`approved_facts` seeded empty (none approved yet).
+
+## 11. Testing
+
+Vitest: compliance scanner (table-driven over every banned phrase + HIGH-RISK detector type), lead service (persona mapping, UTM precedence, idempotency dedup, PDPL cascade), `authz`/workflow-transition matrix, Zod schemas, `readingTime`, JSON-LD builders, RTL/locale-switch logic. Playwright e2e: (a) site-review lead submission EN+AR → admin visible → status change → email queued; (b) compliance gate blocks publish on a banned phrase, HIGH-RISK number force-redirects to `legal_review`, fix+approve+publish succeeds; (c) locale switch preserves exact route across all major pages; (d) `FEATURE_PROJECTS=false` renders "coming soon" and is excluded from the sitemap; (e) campaign landing page carries UTM/`campaign_id` through to the lead payload; (f) reduced-motion emulation skips the hero animation; (g) axe-core a11y scan on Home/Development-model/Submit-your-site ×2 locales. Lighthouse CI thresholds ≥90/95/95 on those same three pages/locales.
+
+## 12. Build order
+
+1. **Scaffold** — Next.js/TS/Tailwind/next-intl/Prisma/NextAuth install, `docker-compose.yml`+`.env.example`, token bridge, `[locale]` layout (lang/dir/fonts), stub routes for the full sitemap, README skeleton.
+2. **Database** — full schema incl. `Task`, first migration, seed script; verify `docker compose up -d postgres && prisma migrate dev && prisma db seed` runs clean; `/api/health`.
+3. **Auth** — NextAuth credentials+JWT, `middleware.ts` guard on `/admin` + `/api/admin/*`, `lib/authz.ts`, CSRF wrapper.
+4. **Design system** — all `ui/` primitives, `AscentBlock`/`AscentMotif`/`GateDiagram`, Header/Footer/LocaleSwitcher/MobileNav, `/dev/ui` kitchen sink.
+5. **Public pages** — Home → Submit-your-site → Development model → About → Modular hospitality (+FAQ JSON-LD) → Services → Partnerships → Insights (list/detail/category) → Contact → Campaigns/[slug] → Privacy/Terms → 404/500.
+6. **Lead engine** — shared Zod schemas, all 5 capture-point endpoints + forms, UTM cookie, job queue/worker, admin leads endpoints+UI.
+7. **Admin CMS + compliance engine** — CRUD for all content types, `WorkflowState` machine + RBAC transition matrix, `ComplianceEngine` + scan/transition endpoints, media library, preview mode.
+8. **Task/Build Tracker** — `Task` model/service/API, list+board UI, dashboard widget, workflow/lead read-aggregation.
+9. **Analytics & hardening** — `events` table + beacon, dashboard aggregation, security headers, rate limiting, structured logging (pino, PII-redacted).
+10. **Tests** — Vitest suites alongside components/services as built, full Playwright suite once seed data exists, Lighthouse CI, manual native-Arabic/RTL review pass.
+11. **Handoff** — README (env table with every `[NEEDS VERIFICATION]` item, seed credentials, Vercel+Docker deploy steps), FEATURES.md §12 checklist fully checked or explicitly marked blocked-on-input, diff implementation against FEATURES.md §2–11 line by line (✅/🚩/⛔).
+
+Commit in logical increments per phase.
+
+## 13. Verification
+
+- `docker compose up -d postgres && npm run db:setup && npm run dev` — site loads at `/en` and `/ar` with correct `dir`, fonts, and nav.
+- `npm run build` succeeds; `npx prisma migrate dev && npx prisma db seed` reproducible from a clean DB.
+- `npm run test` (Vitest) and `npx playwright test` green, including the three named e2e scenarios from `PROMPT.md §6.8`.
+- Manually submit `/en/submit-your-site` and `/ar/submit-your-site`; confirm the lead appears in `/admin/leads`, an email is queued (console/ethereal transport in dev), and status changes persist with an audit row.
+- Manually attempt to publish content containing a banned phrase; confirm it's blocked with the phrase highlighted; fix and confirm publish succeeds.
+- Lighthouse (`npx lhci autorun` or manual DevTools run) ≥90/95/95 on Home, Development-model, Submit-your-site, both locales.
+- Grep-diff the finished build against `FEATURES.md` §2–§11 and produce the ✅/🚩/⛔ checklist required by `PROMPT.md §7`.
+
+## Open items (env-var placeholders, not build blockers)
+
+WhatsApp business number, production domain/DNS/email SPF-DKIM, real SMTP/Resend credentials, KSA-region hosting decision, government-entity dictionary completeness, Arabic translation of the 12 pillar names (needs native-speaker review pass), final legal/PDPL privacy & terms wording — all wired via env vars / seeded placeholders and listed in the README per `PROMPT.md §1`.

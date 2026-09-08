@@ -1,0 +1,516 @@
+{
+  "meta": {
+    "locale": "en",
+    "dir": "ltr"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "developmentModel": "Development Model",
+    "modularHospitality": "Modular Hospitality",
+    "services": "Services",
+    "projects": "Projects",
+    "partnerships": "Partnerships",
+    "insights": "Insights",
+    "opportunities": "Opportunities",
+    "landowners": "Landowners",
+    "investors": "Investors",
+    "news": "News",
+    "careers": "Careers",
+    "search": "Search",
+    "submitSite": "Submit Your Site",
+    "contact": "Contact",
+    "skipToContent": "Skip to content",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "switchLanguage": "العربية"
+  },
+  "megaMenu": {
+    "exploreDyafa": {
+      "label": "Explore Dyafa",
+      "about": "About",
+      "developmentModel": "Development Model",
+      "modularHospitality": "Modular Hospitality",
+      "services": "Capabilities"
+    },
+    "exploreOpportunities": {
+      "label": "Explore Opportunities",
+      "opportunities": "Investment Opportunities",
+      "landowners": "Landowners",
+      "partnerships": "Partnerships",
+      "investors": "Investors"
+    },
+    "exploreProof": {
+      "label": "Explore Proof",
+      "projects": "Projects",
+      "insights": "Insights",
+      "news": "News"
+    },
+    "takeAction": {
+      "label": "Take Action",
+      "submitSite": "Submit Your Site",
+      "requestDiscussion": "Request a Development Discussion",
+      "contact": "Contact"
+    },
+    "searchPlaceholder": "Search insights, projects, opportunities…",
+    "searchCta": "Search"
+  },
+  "footer": {
+    "legalName": "Dyafa Real Estate Development & Investment",
+    "tagline": "From opportunity to operating asset.",
+    "quickLinks": "Quick links",
+    "companyTitle": "Company",
+    "opportunitiesTitle": "Opportunities & Investment",
+    "projectsInsightsTitle": "Projects & Insights",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "contact": "Contact",
+    "rights": "All rights reserved.",
+    "whatsapp": "Chat on WhatsApp"
+  },
+  "common": {
+    "submit": "Submit",
+    "submitting": "Submitting…",
+    "cancel": "Cancel",
+    "close": "Close",
+    "required": "Required",
+    "optional": "Optional",
+    "learnMore": "Learn more",
+    "readMore": "Read more",
+    "backToTop": "Back to top",
+    "error": "Something went wrong. Please try again.",
+    "comingSoon": "Coming soon",
+    "minRead": "{minutes} min read",
+    "showMore": "Show more",
+    "showLess": "Show less"
+  },
+  "home": {
+    "heroHeadline": "Developing hospitality assets built for performance, scalability, and long-term value.",
+    "heroPromise": "From opportunity to operating asset.",
+    "heroCta": "Submit your site for review",
+    "heroSecondaryCta": "Request a development discussion",
+    "promiseBandTitle": "From opportunity to operating asset",
+    "promiseBandBody": "We take land, capital, and operating discipline and turn them into hospitality assets designed to perform — not just to open.",
+    "gatesTitle": "A disciplined path from land to operating asset",
+    "gatesSubtitle": "Five gates, applied to every opportunity before it becomes a development.",
+    "audienceTitle": "Built for the people who move hospitality real estate forward",
+    "audienceLandowner": {
+      "title": "Landowners",
+      "body": "Unlock the operating potential of strategic land with a disciplined development partner.",
+      "cta": "Submit your site"
+    },
+    "audienceInvestor": {
+      "title": "Investors",
+      "body": "Governance, risk visibility, and disciplined structuring — without return promises.",
+      "cta": "Request a discussion"
+    },
+    "audiencePartner": {
+      "title": "Partners",
+      "body": "Modular logic, operator alignment, and flexible development structures.",
+      "cta": "Explore a partnership"
+    },
+    "modularTitle": "Modular is not cheap. Modular is disciplined.",
+    "modularBody": "Repeatable, quality-controlled delivery built for scale — never a shortcut on standards.",
+    "modularCta": "Explore modular with Dyafa",
+    "insightsTitle": "Insights",
+    "insightsSubtitle": "Perspective on hospitality development, modular delivery, and disciplined investment in Saudi Arabia.",
+    "testimonialsTitle": "What our partners say",
+    "submitBandTitle": "Land value is unlocked when the right operating asset is built on it.",
+    "submitBandCta": "Submit your site for review",
+    "capabilityTiles": {
+      "developmentModel": { "title": "Development Model", "body": "How Dyafa moves a site from opportunity to operating asset." },
+      "modularHospitality": { "title": "Modular Hospitality", "body": "Repeatable, quality-controlled delivery built for scale." },
+      "opportunities": { "title": "Opportunities", "body": "Development and investment opportunities under active review." },
+      "investors": { "title": "Investors", "body": "Governance, risk visibility, and disciplined structuring." }
+    },
+    "propertiesTitle": "Delivered and operating",
+    "propertiesSubtitle": "Hospitality assets Dyafa Development has built, now operating under the Dyafa Hotels & Resorts brand.",
+    "partnersTitle": "Partners and operators"
+  },
+  "gates": {
+    "1": { "title": "Site & demand review", "body": "Location, market, and audience fit assessed before anything else." },
+    "2": { "title": "Product concept", "body": "The right hospitality concept for the site and the demand it serves." },
+    "3": { "title": "Feasibility & capex", "body": "Disciplined financial and construction feasibility before commitment." },
+    "4": { "title": "Modular strategy", "body": "Repeatable, quality-controlled delivery approach defined." },
+    "5": { "title": "Delivery & operating readiness", "body": "Built to open and to operate — not just to open." }
+  },
+  "about": {
+    "heroHeadline": "A disciplined hospitality development platform.",
+    "longDescription": "Dyafa Real Estate Development & Investment is the development and investment arm of the Dyafa ecosystem. Through its public-facing brand, Dyafa Development, the company creates hospitality and hospitality-linked real estate assets that are commercially relevant, operationally viable, and scalable. Its work connects feasibility, site analysis, modular development, investment structuring, development management, and operating readiness into one aligned path from opportunity to operating asset.",
+    "cta": "Request a development discussion",
+    "ecosystemTitle": "The Dyafa ecosystem",
+    "ecosystem": {
+      "holding": { "title": "Dyafa Holding", "body": "Governance, capital story, and strategic credibility." },
+      "hotels": { "title": "Dyafa Hotel Operations", "body": "Operating insight and brand/operator alignment." },
+      "services": { "title": "Dyafa Services", "body": "Pre-opening support, technical readiness, and asset preservation." },
+      "aqar": { "title": "Aqar Dyafa", "body": "Post-development property and community management." },
+      "dyafaOne": { "title": "Dyafa One", "body": "The guest, resident, and CRM data layer across the ecosystem." }
+    },
+    "whatWeAreTitle": "What we are",
+    "whatWeAre": [
+      "A hospitality development and investment platform.",
+      "A development partner for landowners and investors.",
+      "A modular hospitality thinker.",
+      "A bridge between real estate and hotel operation.",
+      "A creator of scalable hospitality assets."
+    ],
+    "whatWeAreNotTitle": "What we are not",
+    "whatWeAreNot": [
+      "A general contractor.",
+      "A design office.",
+      "A brokerage business.",
+      "A speculative real estate sales brand.",
+      "A luxury render factory."
+    ],
+    "principlesTitle": "Principles",
+    "principles": [
+      { "title": "Operate-before-design thinking", "body": "Every development decision considers future operation." },
+      { "title": "Capital efficiency", "body": "Development balances cost, speed, quality, and return potential." },
+      { "title": "Modular discipline", "body": "Repeatable components and standardised development logic guide the product." },
+      { "title": "Risk visibility", "body": "Development risk is named, tracked, and managed." },
+      { "title": "Asset value over project completion", "body": "Success is long-term operating value, not only delivery." },
+      { "title": "Saudi execution depth", "body": "Grounded in Saudi market realities, regulation, and financing dynamics." }
+    ],
+    "leadershipTitle": "Leadership"
+  },
+  "developmentModel": {
+    "heroHeadline": "From land to operating hospitality asset.",
+    "cta": "Submit your site",
+    "riskGatesTitle": "Risk is reviewed at every gate, not after the fact."
+  },
+  "modularHospitality": {
+    "heroHeadline": "Modular is not cheap. Modular is disciplined.",
+    "cta": "Explore modular with Dyafa",
+    "whatItMeansTitle": "What modular means at Dyafa",
+    "whatItDoesNotMeanTitle": "What modular does not mean",
+    "repeatabilityTitle": "Repeatability without compromise",
+    "scaleTitle": "Built for scale",
+    "whereItWorksTitle": "Where modular works",
+    "faqTitle": "Frequently asked questions",
+    "faq": [
+      {
+        "q": "Does modular mean cheaper or lower quality?",
+        "a": "No. Modular at Dyafa means repeatable components, standardised development logic, and disciplined delivery — not a reduction in quality or standards."
+      },
+      {
+        "q": "Is a modular hospitality asset temporary?",
+        "a": "No. Modular describes the delivery method, not the permanence of the asset. Modular assets are built to operate over the long term, like any other hospitality asset."
+      },
+      {
+        "q": "Where does modular development work best?",
+        "a": "Modular logic supports both major and secondary cities, particularly where practical, well-planned, operation-ready assets are a better fit than a single mega-project."
+      },
+      {
+        "q": "How does modular support scale?",
+        "a": "Repeatable components and standardised development logic make it possible to replicate a proven concept across multiple sites with more predictable cost, quality, and timeline outcomes."
+      }
+    ]
+  },
+  "services": {
+    "heroHeadline": "Development services built around outcomes, not tasks.",
+    "cta": "Request a review",
+    "processTitle": "How we work",
+    "engagementTitle": "Engagement models",
+    "items": {
+      "siteReview": { "title": "Site review", "body": "Disciplined assessment of a site's hospitality development potential." },
+      "feasibility": { "title": "Feasibility", "body": "Market, concept, and financial feasibility before commitment." },
+      "investmentStructuring": { "title": "Investment structuring", "body": "Governance-first structuring for landowners, investors, and partners." },
+      "developmentManagement": { "title": "Development management", "body": "End-to-end delivery discipline from concept to completion." },
+      "operatingReadiness": { "title": "Operating readiness", "body": "Preparing assets to perform from day one of operation." }
+    }
+  },
+  "partnerships": {
+    "heroHeadline": "The right structure is as important as the right design.",
+    "cta": "Start a partnership conversation",
+    "modelsTitle": "Partnership models",
+    "models": {
+      "landContribution": { "title": "Land contribution", "body": "Landowners contribute the site into a structured development." },
+      "jvSpv": { "title": "JV / SPV", "body": "Joint structures aligned around governance and shared outcomes." },
+      "developmentManagement": { "title": "Development management", "body": "Dyafa manages delivery on behalf of the asset owner." },
+      "coInvestment": { "title": "Co-investment", "body": "Aligned capital participation in disciplined developments." },
+      "operatorPartnership": { "title": "Operator partnership", "body": "Alignment with operators for long-term asset performance." }
+    }
+  },
+  "submitYourSite": {
+    "heroHeadline": "Land value is unlocked when the right operating asset is built on it.",
+    "whatHappensNextTitle": "What happens next",
+    "steps": {
+      "1": "Our development team reviews your submission.",
+      "2": "We follow up to confirm details and next steps.",
+      "3": "Qualified sites move into our development-model review."
+    },
+    "whatsappCta": "Prefer WhatsApp?",
+    "whatsappBody": "Send us your site details directly.",
+    "successTitle": "Thank you — your site has been submitted.",
+    "successBody": "Our development team will be in touch shortly."
+  },
+  "contact": {
+    "heroHeadline": "Talk to Dyafa Development.",
+    "generalTitle": "General inquiries",
+    "talentTitle": "Careers",
+    "talentBody": "Interested in joining Dyafa Development? Tell us more about yourself."
+  },
+  "insights": {
+    "title": "Insights",
+    "subtitle": "Perspective on hospitality development, modular delivery, and disciplined investment in Saudi Arabia.",
+    "by": "By",
+    "allCategories": "All",
+    "newsletterTitle": "Subscribe for updates",
+    "newsletterBody": "Occasional, disciplined updates from Dyafa Development. No spam.",
+    "newsletterCta": "Subscribe",
+    "newsletterEmailPlaceholder": "Your email address",
+    "relatedTitle": "Related insights"
+  },
+  "projects": {
+    "comingSoonTitle": "Projects — coming soon",
+    "comingSoonBody": "Approved development milestones will be published here once confirmed.",
+    "viewProject": "View property",
+    "galleryLabel": "Gallery",
+    "filterAll": "All",
+    "filterByCity": "Filter by city"
+  },
+  "landowners": {
+    "heroHeadline": "Your land, reviewed with development discipline.",
+    "heroBody": "If you own land with hospitality or hospitality-linked potential, our development team reviews it against the same gates we apply to every opportunity — before anything is promised.",
+    "cta": "Submit your site",
+    "benefitsTitle": "What a Dyafa site review looks at",
+    "benefits": {
+      "siteContext": { "title": "Site & market context", "body": "Location, access, and demand fit for hospitality use." },
+      "assetFit": { "title": "Asset and zoning fit", "body": "How the land or existing structure aligns with a viable hospitality product." },
+      "structures": { "title": "Structuring options", "body": "Land contribution, joint structures, or development management — reviewed once fit is established." },
+      "nextSteps": { "title": "Clear next steps", "body": "Every submission receives a defined path forward, whether that is a development discussion or a clear explanation of why it isn't a fit today." }
+    },
+    "processTitle": "What happens after you submit",
+    "faqTitle": "Landowner questions"
+  },
+  "investors": {
+    "heroHeadline": "Governance and risk visibility — without return promises.",
+    "heroBody": "Dyafa Development structures hospitality investment opportunities around disciplined governance, transparent process, and named risk — not projected returns.",
+    "cta": "Request a development discussion",
+    "tabs": {
+      "thesis": {
+        "label": "Thesis",
+        "title": "Our development thesis",
+        "body": "We develop hospitality and hospitality-linked assets where site, demand, and operating readiness align — treating operation, not delivery, as the measure of success."
+      },
+      "lifecycle": {
+        "label": "Lifecycle",
+        "title": "The development lifecycle",
+        "body": "Every opportunity moves through the same disciplined gates: site and demand review, product concept, feasibility, modular strategy, and delivery and operating readiness — before it becomes a live development."
+      },
+      "governance": {
+        "label": "Governance",
+        "title": "Governance",
+        "body": "Every piece of public-facing content, including this page, passes through a content-governance workflow with a compliance gate before publication — the same discipline we apply to development decisions."
+      },
+      "riskFramework": {
+        "label": "Risk Framework",
+        "title": "Risk framework",
+        "body": "Development risk is named and tracked at every gate, categorised by likelihood and impact rather than reduced to a single score.",
+        "matrixLikelihood": "Likelihood",
+        "matrixImpact": "Impact",
+        "categories": {
+          "market": { "title": "Market & demand", "mitigation": "Assessed at the site & demand review gate before any product commitment." },
+          "execution": { "title": "Execution & delivery", "mitigation": "Addressed through modular strategy and disciplined development management." },
+          "regulatory": { "title": "Regulatory & approvals", "mitigation": "Tracked through the feasibility gate alongside financial and construction review." },
+          "operating": { "title": "Operating readiness", "mitigation": "Built into delivery planning so assets are ready to perform from day one." }
+        }
+      },
+      "partnershipModels": {
+        "label": "Partnership Models",
+        "title": "Partnership models",
+        "body": "Land contribution, joint ventures/SPVs, development management, co-investment, and operator partnerships — see Partnerships for detail on each."
+      }
+    }
+  },
+  "opportunities": {
+    "title": "Investment opportunities",
+    "subtitle": "Approved, in-review opportunities across land offerings, development partnerships, and existing-asset repositioning.",
+    "comingSoonTitle": "Opportunities — coming soon",
+    "comingSoonBody": "Approved investment opportunities will be published here once confirmed. In the meantime, landowners and investors are welcome to start a conversation directly.",
+    "filterAll": "All types",
+    "typeLabels": {
+      "land_offering": "Land offering",
+      "development_partnership": "Development partnership",
+      "existing_asset": "Existing asset repositioning"
+    },
+    "statusLabels": {
+      "open": "Open",
+      "under_review": "Under review",
+      "closed": "Closed"
+    },
+    "viewCta": "View opportunity",
+    "backToList": "Back to opportunities",
+    "demandDriversTitle": "Demand drivers",
+    "proposedProductTitle": "Proposed product",
+    "partnershipModelsTitle": "Partnership models",
+    "cta": "Discuss this opportunity"
+  },
+  "news": {
+    "title": "News",
+    "subtitle": "Milestones, partnerships, and announcements from Dyafa Development.",
+    "comingSoonTitle": "News — coming soon",
+    "comingSoonBody": "Announcements and milestones will be published here as they are confirmed.",
+    "typeLabels": {
+      "news": "News",
+      "milestone": "Milestone",
+      "partnership": "Partnership",
+      "event": "Event"
+    },
+    "backToList": "Back to news"
+  },
+  "careers": {
+    "title": "Careers",
+    "subtitle": "Join a disciplined hospitality development platform.",
+    "comingSoonTitle": "Careers — coming soon",
+    "comingSoonBody": "Open roles will be published here as they become available.",
+    "employmentTypes": {
+      "full_time": "Full-time",
+      "part_time": "Part-time",
+      "contract": "Contract",
+      "internship": "Internship"
+    },
+    "applyCta": "Apply",
+    "generalApplyTitle": "Don't see the right role?",
+    "generalApplyBody": "Tell us about yourself through our talent form and we'll keep you in mind for future openings."
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search insights, projects, opportunities, news…",
+    "cta": "Search",
+    "noResults": "No results found.",
+    "resultsFor": "Results for \"{query}\"",
+    "typeLabels": {
+      "insight": "Insight",
+      "project": "Project",
+      "opportunity": "Opportunity",
+      "news": "News",
+      "faq": "FAQ"
+    }
+  },
+  "siteReviewWizard": {
+    "steps": {
+      "intent": "What are you looking for?",
+      "contact": "Contact",
+      "opportunity": "The opportunity",
+      "context": "Context",
+      "documents": "Documents & consent"
+    },
+    "intentTitle": "What are you looking for?",
+    "intentOptions": {
+      "hotel": "Hotel development",
+      "serviced_apartments": "Serviced apartments",
+      "extended_stay": "Extended stay",
+      "mixed_use": "Hospitality mixed-use",
+      "existing_asset_repositioning": "Existing asset repositioning",
+      "unsure": "Unsure / need assessment"
+    },
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit for review",
+    "funnelTitle": "What happens after you submit",
+    "funnelStages": {
+      "received": "Opportunity received",
+      "review": "Initial review",
+      "qualification": "Qualification",
+      "discussion": "Development discussion"
+    },
+    "successTitle": "Thank you — your submission has been received.",
+    "successBody": "Our development team will review your submission and follow up on next steps.",
+    "referenceLabel": "Your reference number",
+    "timelineLabel": "Preferred timeline",
+    "timelineOptions": {
+      "immediate": "Ready now",
+      "short_term": "3–6 months",
+      "long_term": "6+ months",
+      "exploring": "Just exploring"
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "draftNotice": "This policy has not yet completed formal legal review.",
+    "intro": "Dyafa Real Estate Development & Investment (\"Dyafa Development\", \"we\", \"us\") respects your privacy. This policy explains what personal data we collect through this website, why, and the choices available to you under the Saudi Personal Data Protection Law (PDPL).",
+    "sections": [
+      { "title": "What we collect", "body": "Contact and submission details you provide through our forms (name, organization, email, phone, city, site/asset details, uploaded documents) and limited technical data (page views, locale, UTM parameters) for analytics." },
+      { "title": "Why we collect it", "body": "To evaluate and respond to site-review, meeting, contact, talent, and newsletter submissions, and to understand how visitors use the site." },
+      { "title": "Your consent", "body": "We record the date and time you provide consent on each form. You may withdraw consent and request deletion of your data at any time by contacting us." },
+      { "title": "Data retention and deletion", "body": "Personal data is retained only as long as necessary for the purpose collected. You may request a PDPL data-deletion of your lead record; a record of the deletion action itself is kept for audit purposes without your personal data." },
+      { "title": "Contact", "body": "For privacy requests, contact us using the details on our Contact page." }
+    ]
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "draftNotice": "This policy has not yet completed formal legal review.",
+    "intro": "These Terms of Use govern your use of this website, operated by Dyafa Real Estate Development & Investment (\"Dyafa Development\").",
+    "sections": [
+      { "title": "Use of this site", "body": "This site is provided for informational purposes about Dyafa Development's hospitality development services. It is not a real-estate listing platform, an offer of securities, or a guarantee of any development outcome." },
+      { "title": "No investment advice", "body": "Nothing on this site constitutes financial, investment, or legal advice, or a guarantee of returns. Any figures, partners, or projects referenced are approved for publication and do not represent a commitment." },
+      { "title": "Intellectual property", "body": "All content on this site is owned by or licensed to Dyafa Real Estate Development & Investment and may not be reproduced without permission." },
+      { "title": "Governing law", "body": "These terms are governed by the laws of the Kingdom of Saudi Arabia." }
+    ]
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you are looking for doesn't exist or has moved.",
+    "cta": "Back to home"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "An unexpected error occurred. Please try again.",
+    "retry": "Try again"
+  },
+  "forms": {
+    "labels": {
+      "fullName": "Full name",
+      "role": "Role",
+      "organization": "Organization",
+      "email": "Email",
+      "phone": "Phone / WhatsApp",
+      "city": "City",
+      "landLocation": "Land / asset location",
+      "landAreaM2": "Land area (m²)",
+      "legalStatus": "Legal status",
+      "assetType": "Asset type",
+      "documents": "Documents (PDF/JPG, up to 10MB each, max 5 files)",
+      "message": "Message",
+      "consent": "I consent to Dyafa Development processing my personal data in accordance with the Privacy Policy.",
+      "subject": "Subject",
+      "preferredDate": "Preferred date",
+      "cv": "CV / Resume",
+      "position": "Position of interest"
+    },
+    "roles": {
+      "landowner": "Landowner",
+      "investor": "Investor",
+      "developer": "Developer",
+      "government": "Government",
+      "hotelOwner": "Hotel owner",
+      "other": "Other"
+    },
+    "legalStatuses": {
+      "owned": "Owned",
+      "deed": "Deed",
+      "leased": "Leased",
+      "other": "Other"
+    },
+    "assetTypes": {
+      "rawLand": "Raw land",
+      "existingBuilding": "Existing building",
+      "underperformingHotel": "Underperforming hotel"
+    },
+    "errors": {
+      "required": "This field is required.",
+      "invalidEmail": "Enter a valid email address.",
+      "invalidPhone": "Enter a valid phone number.",
+      "fileTooLarge": "File exceeds the 10MB limit.",
+      "fileTypeInvalid": "Only PDF and JPG files are accepted.",
+      "tooManyFiles": "You can upload up to 5 files.",
+      "consentRequired": "Consent is required to submit this form."
+    },
+    "meeting": { "title": "Request a meeting" },
+    "contactForm": { "title": "Send a message" },
+    "talentForm": { "title": "Apply" },
+    "newsletterForm": { "title": "Subscribe" }
+  }
+}

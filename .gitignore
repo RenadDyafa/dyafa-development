@@ -1,0 +1,29 @@
+node_modules
+/.next/
+/out/
+/build/
+.env
+.env.local
+.env.*.local
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+/coverage
+/playwright-report
+/test-results
+/storage/uploads
+.pgdata
+next-env.d.ts
+.turbo
+*.tsbuildinfo
+/.tools/
+# Real property photos/videos dropped in for admin upload via the CMS -
+# source content, not source code; never belongs in git history.
+/photos/
+# Official brand guideline package (logo, favicon, color-branding, and
+# guideline deck pages/zip) - source brand material awaiting a decision on
+# adoption (see the final report), not source code.
+/logo/
+# Claude Code harness session state — not project content.
+.claude/

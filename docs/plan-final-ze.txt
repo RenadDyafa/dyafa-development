@@ -1,0 +1,76 @@
+# Dyafa Development Website — "Operating Asset Engine" Rebuild Pass
+
+## Context
+
+`C:\laragon\www\dyafa-development-web` is **not** a greenfield project. It already contains a complete, previously-tested Next.js 14 (App Router/TS) + Tailwind + next-intl (EN/AR, RTL) + Prisma/PostgreSQL + NextAuth bilingual marketing site, lead-generation engine, and governed admin CMS for Dyafa Development, committed across 7 git commits (HEAD `2126edc`): 72 routes, 69 Vitest tests, 26 Playwright e2e scenarios, 22 Prisma models.
+
+On top of that clean baseline, the working tree currently holds a large **uncommitted** second pass (48 modified + ~50 new files: Opportunities/Landowners/Investors/News/Careers/Search pages, a mega menu, a 5-step lead wizard, 5 new Prisma models, new admin CRUD screens, 9 new UI primitives) that is self-documented as complete and fully tested, but was never committed and has not been independently re-verified. The user reviewed this and decided: **stash it as a safety net (not restore it as-is) and rebuild the required functionality fresh and properly**, against the verified 7-commit baseline. The user also asked for a much richer, premium, "eye-catching" animated visual treatment than the current single-keyframe baseline has — while explicitly choosing to **keep** the current tokens.css palette (navy/teal/bronze/ink/stone/grey) and Montserrat/Almarai fonts rather than adopting `docs/design.md`'s aspirational Inter/IBM Plex Sans Arabic recommendation.
+
+The `docs/` folder holds the authoritative specs: `BRD.md` + `FEATURES.md` (original locked stack/brand/compliance rules), and a newer `design.md` + `architecture.md` + `phases.md` + `implementation.md` + `competitor-benchmark.md` set (the larger IA/visual-system ambition this pass targets). All of `docs/` is being kept and eventually committed — it's the user's own reference material, not a discardable artifact.
+
+**Absolute constraints, non-negotiable throughout:** never invent projects, financial figures, returns, approvals, partners, government relationships, financing, costs, delivery dates, or ownership claims. New claim-bearing entities (Opportunity, NewsItem) ship **empty by default** with a professional coming-soon state (matching the existing `Project`/`Partner`/`FEATURE_PROJECTS` pattern), gated behind their own feature flags. No "guaranteed returns"/"risk-free"/"highest ROI"/"best developer" language. Reuse the existing architecture and conventions everywhere; this is an additive rebuild, not a rewrite of what already works.
+
+## Baseline reality check (confirmed this session, not assumed)
+
+- No `.eslintrc.json` exists at HEAD — `npm run lint` will hang non-interactively until a minimal one (`{"extends": "next/core-web-vitals"}`) is added. Fix this first.
+- The only existing custom keyframe in `src/app/globals.css` is `ascent-rise` (used by `AscentBlock`/`GateDiagram`). There is no general fade-up utility today — the richer motion system is a genuine addition, built to match `ascent-rise`'s existing idiom (inline `animationDelay`, a shared easing curve, full respect for the existing global `@media (prefers-reduced-motion: reduce)` override).
+- `Header.tsx` is a flat nav array, always-solid `sticky` header — no mega menu, no transparent-over-hero state today.
+- `src/lib/admin/workflow.ts`'s `ContentEntityType`/adapter-map pattern and `Partner`'s simple `active`-flag pattern are the two exact templates to copy for, respectively, claim-bearing entities (Opportunity, News) and simple entities (Team, Careers, Faq) — confirmed by reading the real baseline files.
+- `FEATURE_PROJECTS` (`src/lib/env.ts`) is the exact template to replicate per new claim-bearing section (`FEATURE_OPPORTUNITIES`, `FEATURE_NEWS`, `FEATURE_CAREERS`).
+- The existing `/api/leads/site-review` route already accepts multi-file `FormData` uploads — the 5-step wizard is a frontend rework over an already-capable API, not a backend rewrite.
+- Local Postgres (portable, `.tools/pgsql`) and a dev server on port 3000 are already running from a prior session — reusable for verification.
+
+## Execution plan
+
+Work proceeds in phases, each ending in a real, passing verification step and its own git commit (mirroring the existing 7-commit history's own convention), so there's a rollback point after every phase.
+
+**Phase 0 — Safety net + verified baseline**
+`git stash push -u -m "discarded second pass — reference only, do not restore as-is"` (fully recoverable, nothing destroyed). Add the missing `.eslintrc.json`. Run `npm run typecheck`, `npm run lint`, `npm run build`, `npm run db:setup`, `npm run test`, `npm run test:e2e` against the clean baseline and fix anything genuinely broken before building on top of it. Commit as "Baseline verification + eslint config fix."
+
+**Phase 1 — Motion/design foundation**
+Add motion tokens (`--ease-standard`, `--duration-fast/base/slow`) and `--elev-1/2` shadow tokens to `src/styles/tokens.css` (additive only — no renames of existing navy/teal/bronze/stone/grey tokens or fonts). Add `reveal-up`/`reveal-fade` keyframes to `globals.css`. Build `src/lib/motion/useScrollReveal.ts` (one-shot IntersectionObserver hook, reduced-motion-aware) and `src/lib/motion/useScrolled.ts`, plus `src/components/ui/Reveal.tsx` client wrapper. This is the shared foundation every later phase's animation work sits on.
+
+**Phase 2 — New UI primitives** (`src/components/ui/`)
+`Tabs`, `Accordion`, `Badge`, `Skeleton`, `Stepper` (with back-navigation, unlike the discarded version), `Breadcrumbs` (+ `src/lib/seo/breadcrumbs.ts` for `BreadcrumbList` JSON-LD), `Drawer`, `MetricStrip` (IntersectionObserver + rAF count-up, reduced-motion-safe), `Tooltip`. All token-only colors, logical CSS properties for RTL, `cn()` for conditional classes, matching existing component conventions exactly.
+
+**Phase 3 — Database**
+Extend `prisma/schema.prisma` additively: `Opportunity`, `NewsItem` (full `WorkflowState`/`RiskLevel`/compliance-scan treatment, explicitly excluding any financial/return/financing field), `TeamMember`, `JobPosting`, `Faq` (simple `active`-flag pattern like `Partner`), plus `Lead.score`/`opportunityIntent`/`referenceNumber`. New enums: `OpportunityType`, `OpportunityStatus`, `NewsType`, `JobEmploymentType`. Generate a real migration via `npm run db:migrate` (never hand-written SQL). All five new tables seed **empty**.
+
+**Phase 4 — Backend APIs**
+Extend `src/lib/admin/workflow.ts`'s adapter map with `"opportunity"`/`"news"` and `VALID_ENTITIES` in the transition route. Add public read routes (`/api/opportunities`, `/api/news`, etc., published/active-only) and admin CRUD routes under `/api/admin/{opportunities,news,team,careers,faqs}` following the exact `assertSameOrigin → requireRole → zod → prisma → {data,error}` shape used everywhere else. Add `src/lib/leads/scoring.ts` (transparent additive-weight model per `docs/architecture.md` §5, explicitly documented as an internal routing aid, never an investment signal) and `src/lib/leads/reference.ts` (human-readable reference number), wired into `createLead()`. Add `GET /api/search` (parallel published-only queries across Insight/Project/Opportunity/NewsItem/Faq, rate-limited).
+
+**Phase 5 — Admin CMS**
+`OpportunityEditor.tsx`/`NewsEditor.tsx` copying `InsightEditor.tsx`'s exact composition (`WorkflowStatusBar` + `TransitionDialog` + `ComplianceScanPanel` + `BilingualCompletenessCheck`). `TeamManager.tsx`/`CareersManager.tsx`/`FaqsManager.tsx` copying the `Partner` admin pattern (publish-toggle, no workflow engine). Map edit rights onto the existing `dev_lead`/`marketing` roles — do **not** add new roles to the `Role` enum. Update `AdminNav.tsx`.
+
+**Phase 6 — Public pages**
+`FEATURE_OPPORTUNITIES`/`FEATURE_NEWS`/`FEATURE_CAREERS` flags in `src/lib/env.ts`, each gating its section with the `FEATURE_PROJECTS` coming-soon pattern (empty state, `noIndex`, sitemap exclusion) until real approved content exists. Build: `/opportunities` (+ `[slug]`, filter bar), `/landowners` (static, audience-routing CTAs), `/investors` (Tabs: Thesis/Lifecycle/Governance/Risk Framework/Partnership Models — Risk Framework uses a new interactive `RiskMatrix` component, a static qualitative likelihood×impact grid, not a CMS entity, no invented numeric risk scores), `/news` (+ `[slug]`), `/careers`, `/search`.
+
+**Phase 7 — Header, mega menu, and homepage motion adoption**
+`MegaMenu.tsx` (click-toggle, `aria-expanded`/`aria-haspopup`, Escape/outside-click close) and `SearchOverlay.tsx`, re-derived clean (not restored from the stash). `Header.tsx` gains an opt-in `transparentOnHero` prop (transparent-over-dark-hero → solidifies via `useScrolled` + a `.nav-solidify` transition once scrolled), applied only on the homepage — every other page keeps its current always-solid header unchanged. Apply `<Reveal>` staggered entry and `<MetricStrip>` count-ups across the homepage's existing sections; wire the interactive development-stage `GateDiagram` timeline to an explanatory panel per stage.
+
+**Phase 8 — Multi-step Submit Your Site wizard**
+Rework `SiteReviewForm.tsx` into a 5-step wizard (What are you looking for? → Contact → Opportunity → Context → Documents & consent) on one `useForm` instance, `Stepper` progress with back-navigation, per-step validation, `sessionStorage` draft persistence (cleared on success), submitting to the existing `/api/leads/site-review` route (now scoring + returning a reference number). Success screen states the funnel clearly: **Opportunity received → Initial review → Qualification → Development discussion**. Analytics events: `submit_site_start`, `submit_site_step_completed`, `submit_site_submitted`, `document_uploaded`.
+
+**Phase 9 — SEO/Analytics extensions**
+Sitemap entries for new static + dynamic (published Opportunity/News) routes. `BreadcrumbList` on every new page, `NewsArticle` JSON-LD on news detail, `JobPosting` JSON-LD on Careers.
+
+**Phase 10 — Testing (run for real, fix real bugs found)**
+Unit tests: `scoring.test.ts`, `reference.test.ts`, workflow-adapter extension tests, compliance-scanner tests against Opportunity/News content, search-service tests (published-only filtering). E2e specs (matching `e2e/site-review-lead.spec.ts`'s style — `helpers.ts`, `expect.poll` against Prisma, EN+AR): `site-review-wizard.spec.ts`, `mega-menu-search.spec.ts`, `feature-flags.spec.ts` extension, `reduced-motion.spec.ts` extension (assert near-zero animation duration under `emulateMedia({reducedMotion:"reduce"})`), `accessibility.spec.ts` extension covering every new route. Final gate: `npm run typecheck && npm run lint && npm run build && npm run test && npm run test:e2e` all green.
+
+**Phase 11 — Documentation**
+Rewrite `explain.md` and `tasklist.md` (currently stale, from the discarded pass) to describe the actual, verified end state of this rebuild — brief but complete, matching the existing docs' quality bar. Extend `README.md`'s verification log with this pass's real command output and the new env vars. Add a short note to `docs/design.md` §3.2/§4 acknowledging the deliberate choice to keep the shipped palette/fonts rather than its aspirational recommendation.
+
+**Phase 12 — Run and demonstrate**
+Start (or restart clean) `npm run dev`, smoke-check every new and existing route in both locales, confirm RTL, confirm reduced-motion behavior, confirm the admin CMS end-to-end for at least one new entity (create → compliance scan → transition → publish). Report to the user: what's built and verified, what's deliberately deferred and why (interactive maps and CRM webhook need external API keys/decisions; real Opportunity/News/Team/Careers content needs Dyafa's own approval — nothing invented), and exactly what remains for a human (final logo, WhatsApp number, production SMTP/Resend credentials, hosting/domain decision, native-Arabic copy review, legal review).
+
+## Critical files
+
+- `prisma/schema.prisma`, `src/lib/admin/workflow.ts`, `src/lib/authz.ts`, `src/lib/env.ts` — the extension points every new entity plugs into.
+- `src/components/admin/InsightEditor.tsx` + its route handlers — the exact pattern for Opportunity/News admin editors.
+- `src/components/layout/Header.tsx`, `src/app/globals.css`, `src/styles/tokens.css` — the motion/nav foundation.
+- `src/components/forms/SiteReviewForm.tsx`, `src/lib/validation/schemas/siteReview.ts`, `src/lib/leads/service.ts` — the funnel rework.
+- `e2e/site-review-lead.spec.ts`, `e2e/accessibility.spec.ts`, `e2e/reduced-motion.spec.ts` — the e2e patterns to extend.
+
+## Verification
+
+After every phase: relevant `npm run typecheck`/`lint` at minimum. After Phase 10: the full `typecheck && lint && build && test && test:e2e` chain must pass for real (command output checked, not assumed). Phase 12 does a live manual smoke pass against `npm run dev` across EN/AR for every route, plus one full admin create→publish cycle for a new entity, before reporting completion to the user.

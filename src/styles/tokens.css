@@ -1,0 +1,105 @@
+:root {
+  /* Official brand palette — the ONLY 6 colors approved for use anywhere on
+     this site (logo/color-branding.png, Thrill Creative Agency brand deck,
+     2026|1447): Charcoal Black #232224, Olive Stone #6D6D61, Warm Taupe
+     #858270, Soft Sand #C9CABC, Light Gray #D0D0D0, Off White #EBEBEB.
+     Every token below resolves to one of these 6 exact hex values — none
+     invented, none lightened/darkened. Mapped onto the *existing* token
+     roles/names (navy/teal/bronze/stone/grey/slate) rather than renamed,
+     so none of the ~110 component files using bg-navy-900/text-teal-600/
+     etc. needed to change — only what those names resolve to. Several
+     roles necessarily share the same underlying hex (there are 6 colors
+     and more than 6 roles) — reusing an approved color across roles is
+     the point, not a gap. The one deliberate exception is --alert: a
+     semantic error/validation color, not a brand color, and the deck
+     doesn't specify one — see the note below.
+
+     Role assignment, corrected against a REAL axe-core run (not just hand
+     arithmetic): Olive Stone as small text measures 4.39:1 on Off White
+     and 3.15:1 on Soft Sand — both below the 4.5:1 AA threshold for
+     normal-size text (an earlier pass in this session mistakenly verified
+     Olive Stone against pure white, 5.25:1, rather than the site's actual
+     Off-White background — axe-core caught the difference). Warm Taupe is
+     worse still (3.87:1 on Off White). Charcoal Black is the ONLY one of
+     the 6 exact colors dark enough to reach 4.5:1 against any of this
+     site's light backgrounds, so every role that renders small real text
+     on a light background (slate, teal-600, grey-500/600) uses it — this
+     does mean "muted/secondary" text is no longer a visually distinct
+     shade from primary text; hierarchy there now comes from size/weight
+     (already the case for headings) rather than color, since no other
+     approved color can carry that distinction and still pass AA. Olive
+     Stone/Warm Taupe remain fully in use for solid dark-mode panel
+     shades, borders, decorative fills/icons, and light-on-dark text
+     (Soft Sand/Light Gray measure 9-10:1 on Charcoal Black). Solid
+     button/badge fills needing light text also moved to Charcoal Black
+     for the same reason (Button.tsx, Badge.tsx, Stepper.tsx document
+     this locally too). */
+  --navy-900: #232224; /* Charcoal Black */
+  --navy-800: #6d6d61; /* Olive Stone */
+  --navy-700: #858270; /* Warm Taupe */
+  --slate: #232224; /* Charcoal Black - see note above */
+
+  --teal-600: #232224; /* Charcoal Black - see note above */
+  --teal-500: #858270; /* Warm Taupe */
+  --teal-300: #c9cabc; /* Soft Sand */
+  --teal-100: #d0d0d0; /* Light Gray */
+  --teal-050: #ebebeb; /* Off White */
+
+  --bronze: #858270; /* Warm Taupe */
+  /* Semantic error/validation red — not one of the 6 brand colors, which
+     include no error color at all. Kept as the only non-brand exception,
+     unchanged from before the rebrand. */
+  --alert: #b4423c;
+
+  --stone-050: #ebebeb; /* Off White */
+  --stone-100: #c9cabc; /* Soft Sand */
+  --grey-100: #d0d0d0; /* Light Gray */
+  --grey-200: #d0d0d0; /* Light Gray */
+  --grey-400: #c9cabc; /* Soft Sand - light-on-dark (Footer headers); see TaskBoard.tsx for the one light-bg text spot fixed individually */
+  --grey-500: #232224; /* Charcoal Black - see note above */
+  --grey-600: #232224; /* Charcoal Black - see note above */
+
+  /* RGB channel triplets for Tailwind's rgb(var(--x-rgb) / <alpha-value>)
+     pattern, so utilities like bg-alert/10 produce valid opacity output. */
+  --navy-900-rgb: 35 34 36;
+  --navy-800-rgb: 109 109 97;
+  --navy-700-rgb: 133 130 112;
+  --slate-rgb: 35 34 36;
+
+  --teal-600-rgb: 35 34 36;
+  --teal-500-rgb: 133 130 112;
+  --teal-300-rgb: 201 202 188;
+  --teal-100-rgb: 208 208 208;
+  --teal-050-rgb: 235 235 235;
+
+  --bronze-rgb: 133 130 112;
+  --alert-rgb: 180 66 60;
+
+  --stone-050-rgb: 235 235 235;
+  --stone-100-rgb: 201 202 188;
+  --grey-100-rgb: 208 208 208;
+  --grey-200-rgb: 208 208 208;
+  --grey-400-rgb: 201 202 188;
+  --grey-500-rgb: 35 34 36;
+  --grey-600-rgb: 35 34 36;
+
+  --font-en: "Montserrat", system-ui, sans-serif;
+  --font-ar: "Almarai", system-ui, sans-serif;
+
+  --focus-ring: 0 0 0 3px rgba(35, 34, 36, 0.45);
+
+  /* Motion system additions (design.md §12: subtle, 150-350ms, one shared
+     curve) — every new animation in the "Operating Asset Engine" motion
+     pass reads from these instead of hardcoding durations/easing, so the
+     whole site accelerates/settles consistently. */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 350ms;
+
+  /* Restrained elevation — design.md §5: "shadows: minimal, rely on
+     spacing/borders/imagery." Only for genuinely floating surfaces
+     (drawers, tooltips, the mega-menu panel), never for cards. */
+  --elev-1: 0 1px 2px rgba(35, 34, 36, 0.06), 0 2px 8px rgba(35, 34, 36, 0.06);
+  --elev-2: 0 4px 12px rgba(35, 34, 36, 0.08), 0 12px 32px rgba(35, 34, 36, 0.1);
+}

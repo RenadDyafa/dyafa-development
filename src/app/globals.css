@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "../styles/tokens.css";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--stone-050);
+    color: var(--navy-900);
+    font-family: var(--font-en);
+  }
+
+  [dir="rtl"] body {
+    font-family: var(--font-ar);
+  }
+
+  /* Arabic type-scale parity: Almarai reads visually smaller than Montserrat
+     at equal font-size, so RTL bumps size instead of shrinking the Latin scale. */
+  [dir="rtl"] h1 {
+    font-size: 1.12em;
+  }
+  [dir="rtl"] h2 {
+    font-size: 1.1em;
+  }
+  [dir="rtl"] h3,
+  [dir="rtl"] p,
+  [dir="rtl"] li,
+  [dir="rtl"] label,
+  [dir="rtl"] button,
+  [dir="rtl"] input,
+  [dir="rtl"] textarea {
+    font-size: 1.06em;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@keyframes ascent-rise {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Scroll-reveal system (useScrollReveal + <Reveal>) — a one-shot entry
+   animation distinct from ascent-rise (which stays dedicated to the
+   riser-block hero/gate motif). Two variants: reveal-up for content that
+   reads naturally with a slight rise, reveal-fade for content inside a
+   horizontally-scrolling row where a Y-shift would look wrong. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  .reveal-up {
+    animation: reveal-up var(--duration-slow) var(--ease-standard) both;
+  }
+
+  .reveal-fade {
+    animation: reveal-fade var(--duration-slow) var(--ease-standard) both;
+  }
+
+  /* Restrained hover lift for interactive cards (project/opportunity/news
+     cards, capability tiles) — design.md §12's "image scale 1.00->1.03 on
+     hover", generalised to a matching subtle lift for the card itself. */
+  .hover-lift {
+    transition:
+      transform var(--duration-base) var(--ease-standard),
+      box-shadow var(--duration-base) var(--ease-standard);
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--elev-1);
+  }
+}
+
+@layer components {
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-navy-900 focus:px-4 focus:py-2 focus:text-stone-050;
+  }
+}

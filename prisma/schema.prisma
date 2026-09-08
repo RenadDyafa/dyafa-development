@@ -1,0 +1,814 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  marketing
+  dev_lead
+  ceo
+  legal
+  admin
+}
+
+enum Locale {
+  en
+  ar
+}
+
+enum LeadType {
+  site_review
+  meeting
+  contact
+  talent
+  newsletter
+}
+
+enum Persona {
+  landowner
+  investor
+  developer_jv
+  government
+  hotel_owner
+  consultant
+  media
+  talent
+  other
+}
+
+// closed vs archived kept distinct: closed = resolved outcome (won/lost),
+// archived = no further action, no outcome recorded.
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  meeting
+  handed_to_bd
+  closed
+  archived
+}
+
+enum LegalStatus {
+  owned
+  deed
+  leased
+  other
+}
+
+enum AssetType {
+  raw_land
+  existing_building
+  underperforming_hotel
+}
+
+enum WorkflowState {
+  draft
+  tech_review
+  positioning_review
+  legal_review
+  approved
+  published
+  archived
+}
+
+enum RiskLevel {
+  low
+  medium
+  high
+}
+
+enum BannedSeverity {
+  block
+  flag
+}
+
+enum MediaKind {
+  image
+  document
+  video
+}
+
+enum TaskCategory {
+  content_workflow
+  lead_pipeline
+  general
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  blocked
+  done
+  cancelled
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum EmailJobStatus {
+  pending
+  sent
+  failed
+}
+
+enum OpportunityType {
+  land_offering
+  development_partnership
+  existing_asset
+}
+
+enum OpportunityStatus {
+  open
+  under_review
+  closed
+}
+
+enum NewsType {
+  news
+  milestone
+  partnership
+  event
+}
+
+enum JobEmploymentType {
+  full_time
+  part_time
+  contract
+  internship
+}
+
+// ---------- Models ----------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  role         Role
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  leadNotes        LeadNote[]
+  approvals        Approval[]
+  mediaUploaded    Media[]
+  approvedInsights Insight[]      @relation("InsightApprover")
+  approvedProjects Project[]      @relation("ProjectApprover")
+  approvedPartners Partner[]      @relation("PartnerApprover")
+  approvedFacts    ApprovedFact[] @relation("FactApprover")
+  approvedPages    Page[]         @relation("PageApprover")
+  authoredInsights Insight[]      @relation("InsightAuthor")
+  tasksCreated     Task[]         @relation("TaskCreatedBy")
+  tasksAssigned    Task[]         @relation("TaskAssignee")
+
+  approvedOpportunities Opportunity[] @relation("OpportunityApprover")
+  approvedNewsItems     NewsItem[]    @relation("NewsApprover")
+  approvedTeamMembers   TeamMember[]  @relation("TeamApprover")
+  approvedJobPostings   JobPosting[]  @relation("JobApprover")
+  approvedHomeSlides    HomeSlide[]   @relation("HomeSlideApprover")
+  approvedTestimonials  Testimonial[] @relation("TestimonialApprover")
+
+  @@map("users")
+}
+
+model Lead {
+  id      String     @id @default(cuid())
+  type    LeadType
+  persona Persona?
+  status  LeadStatus @default(new)
+
+  name    String
+  org     String?
+  email   String
+  phone   String
+  city    String?
+  locale  Locale
+  message String?
+
+  landLocation    String?      @map("land_location")
+  landLocationLat Float?       @map("land_location_lat")
+  landLocationLng Float?       @map("land_location_lng")
+  landAreaM2      Float?       @map("land_area_m2")
+  legalStatus     LegalStatus? @map("legal_status")
+  assetType       AssetType?   @map("asset_type")
+
+  campaignId String?   @map("campaign_id")
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+
+  utmSource   String? @map("utm_source")
+  utmMedium   String? @map("utm_medium")
+  utmCampaign String? @map("utm_campaign")
+  utmTerm     String? @map("utm_term")
+  utmContent  String? @map("utm_content")
+
+  idempotencyKey String? @unique @map("idempotency_key")
+
+  // Internal routing aid only (lib/leads/scoring.ts) - never shown to the
+  // lead, never an investment signal. opportunityIntent is the Step-1
+  // "what are you looking for?" answer from the site-review wizard.
+  // referenceNumber is returned to the visitor on the success screen.
+  score             Int?    @default(0)
+  opportunityIntent String? @map("opportunity_intent")
+  timeline          String?
+  referenceNumber   String? @unique @map("reference_number")
+
+  consentAt DateTime  @map("consent_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  notes LeadNote[]
+  files LeadFile[]
+
+  @@index([status, persona, createdAt])
+  @@index([campaignId])
+  @@map("leads")
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String   @map("lead_id")
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String   @map("author_id")
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("lead_notes")
+}
+
+model LeadFile {
+  id        String   @id @default(cuid())
+  leadId    String   @map("lead_id")
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  path      String
+  filename  String
+  mime      String
+  size      Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("lead_files")
+}
+
+model Page {
+  id       String        @id @default(cuid())
+  key      String        @unique
+  template String
+  status   WorkflowState @default(draft)
+
+  audience     String?
+  objective    String?
+  cta          String?
+  riskLevel    RiskLevel @default(low) @map("risk_level")
+  approvedById String?   @map("approved_by_id")
+  approvedBy   User?     @relation("PageApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? @map("approved_at")
+
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  blocks PageBlock[]
+
+  @@map("pages")
+}
+
+model PageBlock {
+  id       String @id @default(cuid())
+  pageId   String @map("page_id")
+  page     Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  order    Int
+  type     String
+  dataJson Json   @map("data_json")
+
+  @@index([pageId, order])
+  @@map("page_blocks")
+}
+
+model Insight {
+  id        String @id @default(cuid())
+  slugEn    String @unique @map("slug_en")
+  slugAr    String @unique @map("slug_ar")
+  titleEn   String @map("title_en")
+  titleAr   String @map("title_ar")
+  bodyEn    String @map("body_en")
+  bodyAr    String @map("body_ar")
+  excerptEn String @map("excerpt_en")
+  excerptAr String @map("excerpt_ar")
+
+  pillarId String @map("pillar_id")
+  pillar   Pillar @relation(fields: [pillarId], references: [id])
+
+  authorId String @map("author_id")
+  author   User   @relation("InsightAuthor", fields: [authorId], references: [id])
+
+  coverMediaId String? @map("cover_media_id")
+  coverMedia   Media?  @relation(fields: [coverMediaId], references: [id])
+
+  status       WorkflowState @default(draft)
+  riskLevel    RiskLevel     @default(low) @map("risk_level")
+  audience     String?
+  objective    String?
+  cta          String?
+  approvedById String?       @map("approved_by_id")
+  approvedBy   User?         @relation("InsightApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?     @map("approved_at")
+
+  publishedAt DateTime? @map("published_at")
+  seoJson     Json?     @map("seo_json")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, publishedAt])
+  @@map("insights")
+}
+
+model Pillar {
+  id     String @id @default(cuid())
+  key    String @unique
+  nameEn String @map("name_en")
+  nameAr String @map("name_ar")
+
+  insights Insight[]
+
+  @@map("pillars")
+}
+
+model Project {
+  id        String  @id @default(cuid())
+  nameEn    String  @map("name_en")
+  nameAr    String  @map("name_ar")
+  slug      String  @unique
+  stage     String
+  city      String?
+  summaryEn String  @map("summary_en")
+  summaryAr String  @map("summary_ar")
+
+  status       WorkflowState @default(draft)
+  riskLevel    RiskLevel     @default(medium) @map("risk_level")
+  audience     String?
+  objective    String?
+  cta          String?
+  approvedById String?       @map("approved_by_id")
+  approvedBy   User?         @relation("ProjectApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?     @map("approved_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  newsItems NewsItem[]
+  images    ProjectImage[]
+
+  @@map("projects")
+}
+
+// Gallery images for a Project, e.g. a delivered/operating property's
+// photography. Separate join model (not a raw Media[] many-to-many) so each
+// image can carry its own display order, cover flag, and optional caption -
+// same shape as HomeSlide/Testimonial's media-linking convention.
+model ProjectImage {
+  id        String  @id @default(cuid())
+  projectId String  @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mediaId   String  @map("media_id")
+  media     Media   @relation(fields: [mediaId], references: [id])
+
+  displayOrder Int     @default(0) @map("display_order")
+  isCover      Boolean @default(false) @map("is_cover")
+  captionEn    String? @map("caption_en")
+  captionAr    String? @map("caption_ar")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("project_images")
+}
+
+model Campaign {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  headlineEn  String        @map("headline_en")
+  headlineAr  String        @map("headline_ar")
+  formVariant String        @default("site_review") @map("form_variant")
+  status      WorkflowState @default(draft)
+  startsAt    DateTime?     @map("starts_at")
+  endsAt      DateTime?     @map("ends_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  leads Lead[]
+
+  @@map("campaigns")
+}
+
+model Partner {
+  id           String    @id @default(cuid())
+  nameEn       String    @map("name_en")
+  nameAr       String    @map("name_ar")
+  logoMediaId  String?   @map("logo_media_id")
+  logoMedia    Media?    @relation(fields: [logoMediaId], references: [id])
+  approvedById String?   @map("approved_by_id")
+  approvedBy   User?     @relation("PartnerApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? @map("approved_at")
+  active       Boolean   @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("partners")
+}
+
+// Claim-bearing content: full WorkflowState/compliance-scan treatment, same
+// as Insight/Project. Deliberately excludes any financial/return/financing
+// field - architecture.md §4: "Financial figures, returns, financing or
+// approvals must never become public fields automatically." Ships empty by
+// default (see prisma/seed.ts), gated behind FEATURE_OPPORTUNITIES until
+// real, approved content exists.
+model Opportunity {
+  id      String          @id @default(cuid())
+  slugEn  String          @unique @map("slug_en")
+  slugAr  String          @unique @map("slug_ar")
+  titleEn String          @map("title_en")
+  titleAr String          @map("title_ar")
+  type    OpportunityType
+
+  city             String?
+  region           String?
+  assetType        AssetType?        @map("asset_type")
+  siteSizeM2       Float?            @map("site_size_m2")
+  status           OpportunityStatus @default(open)
+  developmentStage String?           @map("development_stage")
+
+  demandDriversEn     String? @map("demand_drivers_en")
+  demandDriversAr     String? @map("demand_drivers_ar")
+  proposedProductEn   String? @map("proposed_product_en")
+  proposedProductAr   String? @map("proposed_product_ar")
+  partnershipModelsEn String? @map("partnership_models_en")
+  partnershipModelsAr String? @map("partnership_models_ar")
+  publicSummaryEn     String  @map("public_summary_en")
+  publicSummaryAr     String  @map("public_summary_ar")
+
+  coverMediaId String? @map("cover_media_id")
+  coverMedia   Media?  @relation(fields: [coverMediaId], references: [id])
+
+  workflowState WorkflowState @default(draft) @map("workflow_state")
+  riskLevel     RiskLevel     @default(medium) @map("risk_level")
+  audience      String?
+  objective     String?
+  cta           String?
+  approvedById  String?       @map("approved_by_id")
+  approvedBy    User?         @relation("OpportunityApprover", fields: [approvedById], references: [id])
+  approvedAt    DateTime?     @map("approved_at")
+  publishedAt   DateTime?     @map("published_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, workflowState])
+  @@map("opportunities")
+}
+
+// Same governance treatment as Opportunity - milestones/partnerships/
+// announcements are exactly the "named project timelines, partner claims"
+// category the compliance rules flag as sensitive.
+model NewsItem {
+  id      String   @id @default(cuid())
+  slugEn  String   @unique @map("slug_en")
+  slugAr  String   @unique @map("slug_ar")
+  titleEn String   @map("title_en")
+  titleAr String   @map("title_ar")
+  type    NewsType
+
+  excerptEn String    @map("excerpt_en")
+  excerptAr String    @map("excerpt_ar")
+  bodyEn    String    @map("body_en")
+  bodyAr    String    @map("body_ar")
+  eventDate DateTime? @map("event_date")
+  location  String?
+
+  relatedProjectId String?  @map("related_project_id")
+  relatedProject   Project? @relation(fields: [relatedProjectId], references: [id])
+
+  coverMediaId String? @map("cover_media_id")
+  coverMedia   Media?  @relation(fields: [coverMediaId], references: [id])
+
+  workflowState WorkflowState @default(draft) @map("workflow_state")
+  riskLevel     RiskLevel     @default(low) @map("risk_level")
+  audience      String?
+  objective     String?
+  cta           String?
+  approvedById  String?       @map("approved_by_id")
+  approvedBy    User?         @relation("NewsApprover", fields: [approvedById], references: [id])
+  approvedAt    DateTime?     @map("approved_at")
+  publishedAt   DateTime?     @map("published_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([workflowState, publishedAt])
+  @@map("news_items")
+}
+
+// Simple publish-flag pattern (matching Partner) rather than the full
+// workflow engine: leadership bios, job listings and FAQ copy don't carry
+// investment/financial/partner claims, so the lighter review path is a
+// proportionality decision, not a compliance gap.
+model TeamMember {
+  id     String  @id @default(cuid())
+  nameEn String  @map("name_en")
+  nameAr String  @map("name_ar")
+  roleEn String  @map("role_en")
+  roleAr String  @map("role_ar")
+  bioEn  String? @map("bio_en")
+  bioAr  String? @map("bio_ar")
+
+  photoMediaId String? @map("photo_media_id")
+  photoMedia   Media?  @relation(fields: [photoMediaId], references: [id])
+  linkedinUrl  String? @map("linkedin_url")
+
+  displayOrder Int       @default(0) @map("display_order")
+  active       Boolean   @default(false)
+  approvedById String?   @map("approved_by_id")
+  approvedBy   User?     @relation("TeamApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? @map("approved_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("team_members")
+}
+
+model JobPosting {
+  id             String            @id @default(cuid())
+  slug           String            @unique
+  titleEn        String            @map("title_en")
+  titleAr        String            @map("title_ar")
+  departmentEn   String?           @map("department_en")
+  departmentAr   String?           @map("department_ar")
+  city           String?
+  employmentType JobEmploymentType @map("employment_type")
+  descriptionEn  String            @map("description_en")
+  descriptionAr  String            @map("description_ar")
+
+  active       Boolean   @default(false)
+  approvedById String?   @map("approved_by_id")
+  approvedBy   User?     @relation("JobApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? @map("approved_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("job_postings")
+}
+
+model Faq {
+  id           String  @id @default(cuid())
+  questionEn   String  @map("question_en")
+  questionAr   String  @map("question_ar")
+  answerEn     String  @map("answer_en")
+  answerAr     String  @map("answer_ar")
+  category     String?
+  displayOrder Int     @default(0) @map("display_order")
+  active       Boolean @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("faqs")
+}
+
+// Homepage hero slider slides. Each slide is one Media row (image or
+// video - Media.kind already distinguishes the two) plus optional overlay
+// copy; ships empty by design, so the homepage falls back to its existing
+// static hero until an admin adds real, approved slides. Slider mechanics
+// (arrows/bullets/autoplay speed) are a Setting row (home_slider_settings),
+// not modeled here - that's presentation config, not content.
+model HomeSlide {
+  id           String @id @default(cuid())
+  displayOrder Int    @default(0) @map("display_order")
+
+  mediaId String @map("media_id")
+  media   Media  @relation(fields: [mediaId], references: [id])
+
+  headlineEn    String? @map("headline_en")
+  headlineAr    String? @map("headline_ar")
+  subheadlineEn String? @map("subheadline_en")
+  subheadlineAr String? @map("subheadline_ar")
+  ctaLabelEn    String? @map("cta_label_en")
+  ctaLabelAr    String? @map("cta_label_ar")
+  ctaHref       String? @map("cta_href")
+
+  active       Boolean   @default(false)
+  approvedById String?   @map("approved_by_id")
+  approvedBy   User?     @relation("HomeSlideApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? @map("approved_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("home_slides")
+}
+
+// Customer/client testimonials for the homepage testimonial slider. Every
+// quote must be attributed to a real person who actually gave it - ships
+// empty by design like every other claim-bearing content type here, and
+// the admin active-flag gate is the only publish control (no separate
+// workflow engine, matching TeamMember/JobPosting's proportionality
+// decision - a quote isn't a financial/partner/project claim).
+model Testimonial {
+  id           String @id @default(cuid())
+  displayOrder Int    @default(0) @map("display_order")
+
+  quoteEn       String  @map("quote_en")
+  quoteAr       String  @map("quote_ar")
+  authorName    String  @map("author_name")
+  authorRoleEn  String? @map("author_role_en")
+  authorRoleAr  String? @map("author_role_ar")
+  authorCompany String? @map("author_company")
+
+  avatarMediaId String? @map("avatar_media_id")
+  avatarMedia   Media?  @relation(fields: [avatarMediaId], references: [id])
+
+  active       Boolean   @default(false)
+  approvedById String?   @map("approved_by_id")
+  approvedBy   User?     @relation("TestimonialApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? @map("approved_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("testimonials")
+}
+
+model ApprovedFact {
+  id           String    @id @default(cuid())
+  statementEn  String    @map("statement_en")
+  statementAr  String    @map("statement_ar")
+  source       String?
+  owner        String?
+  // Optional structured form so a fact can double as a homepage StatStrip
+  // number (e.g. value=12, prefix=null, suffix="+") - additive and nullable,
+  // free-text-only facts are unaffected. A fact only renders in the strip
+  // once an admin fills these in through the same approval gate every other
+  // fact already goes through - never a bypass for inventing a number.
+  value        Int?
+  prefix       String?
+  suffix       String?
+  approvedById String?   @map("approved_by_id")
+  approvedBy   User?     @relation("FactApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? @map("approved_at")
+  expiresAt    DateTime? @map("expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("approved_facts")
+}
+
+model BannedPhrase {
+  id       String         @id @default(cuid())
+  phrase   String
+  lang     Locale
+  severity BannedSeverity
+  active   Boolean        @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([phrase, lang])
+  @@map("banned_phrases")
+}
+
+model Media {
+  id              String    @id @default(cuid())
+  path            String
+  altEn           String?   @map("alt_en")
+  altAr           String?   @map("alt_ar")
+  kind            MediaKind
+  isConceptVisual Boolean   @default(false) @map("is_concept_visual")
+  createdById     String    @map("created_by_id")
+  createdBy       User      @relation(fields: [createdById], references: [id])
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  insights      Insight[]
+  partners      Partner[]
+  opportunities Opportunity[]
+  newsItems     NewsItem[]
+  teamMembers   TeamMember[]
+  homeSlides    HomeSlide[]
+  testimonials  Testimonial[]
+  projectImages ProjectImage[]
+
+  @@map("media")
+}
+
+// Generic audit log. entityType/entityId are plain strings (not FKs) so the
+// audit trail survives hard-deletes (e.g. PDPL lead erasure).
+model Approval {
+  id         String   @id @default(cuid())
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  fromState  String?  @map("from_state")
+  toState    String   @map("to_state")
+  actorId    String   @map("actor_id")
+  actor      User     @relation(fields: [actorId], references: [id])
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@map("approvals")
+}
+
+model Subscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  locale         Locale
+  confirmToken   String?   @unique @map("confirm_token")
+  confirmedAt    DateTime? @map("confirmed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@map("subscribers")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  path        String?
+  utmJson     Json?    @map("utm_json")
+  sessionHash String?  @map("session_hash")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([name, createdAt])
+  @@map("events")
+}
+
+model Setting {
+  key       String   @id
+  valueJson Json     @map("value_json")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+// Real to-do rows (category=general). Workflow/lead-derived board cards are a
+// read-time aggregation over WorkflowState/LeadStatus, not stored here.
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  category    TaskCategory @default(general)
+  status      TaskStatus   @default(todo)
+  priority    TaskPriority @default(medium)
+
+  assigneeId String? @map("assignee_id")
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("TaskCreatedBy", fields: [createdById], references: [id])
+
+  dueAt            DateTime? @map("due_at")
+  linkedEntityType String?   @map("linked_entity_type")
+  linkedEntityId   String?   @map("linked_entity_id")
+  completedAt      DateTime? @map("completed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, category])
+  @@index([assigneeId])
+  @@map("tasks")
+}
+
+// DB-backed email queue (FEATURES.md §7 "background jobs"). The worker
+// process (src/worker/index.ts, docker-compose "worker" service) retries
+// pending/failed jobs; lead creation also attempts an immediate inline send
+// for the <=1 minute notification SLA, falling back to the queue on failure.
+model EmailJob {
+  id        String         @id @default(cuid())
+  to        String[]
+  subject   String
+  template  String
+  dataJson  Json           @map("data_json")
+  status    EmailJobStatus @default(pending)
+  attempts  Int            @default(0)
+  lastError String?        @map("last_error")
+  sendAfter DateTime       @default(now()) @map("send_after")
+  createdAt DateTime       @default(now()) @map("created_at")
+  sentAt    DateTime?      @map("sent_at")
+
+  @@index([status, sendAfter])
+  @@map("email_jobs")
+}
